@@ -5,20 +5,26 @@
 #include "Arduino.h"
 #include "extEEPROM.h"
 
+typedef struct {
+    uint8_t  type;
+    uint8_t  rlen;
+    uint16_t capa;
+} eesam_head;
+
 class eeprom_sam {
 public:
     eeprom_sam(extEEPROM* vol, unsigned long pos);
     eeprom_sam();
     bool read(void * record);
     bool write(void * record);
+    bool write(void * record, bool sure);
     unsigned long size();
     bool available();
 
 private:
     extEEPROM* _vol;
     unsigned long _origin;
-    uint8_t _reclen;
-    uint16_t _capacity;
+    eesam_head _head;
     uint16_t _position;
 } ;
 
@@ -32,7 +38,7 @@ public:
     eeprom_sam sam(int entry);
 
 private:
-    bool read_header(unsigned long pos, uint8_t* len, uint16_t* cap);
+    bool read_header(unsigned long pos, eesam_head* head);
 
     extEEPROM* _vol;
 };
