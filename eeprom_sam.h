@@ -3,7 +3,7 @@
 #define _EEPROM_SAM_H
 
 #include "Arduino.h"
-#include "extEEPROM.h"
+#include <extEEPROM.h>
 
 typedef struct {
     uint8_t  type;
@@ -45,3 +45,4 @@ private:
 
 
 #endif
+
