@@ -13,13 +13,23 @@ eeprom_catalog::eeprom_catalog(extEEPROM* vol) {
     _vol=vol;
 } 
 
-void eeprom_catalog::init_rom() {
-    byte buf[8] = {0};
-    unsigned long capacity,pos =0;
-    capacity = _vol->capacity();
-    while (_vol->write(pos,buf,sizeof(buf))==0) {
-        pos += sizeof(buf);
-        if (pos>capacity) break;
+void eeprom_catalog::init_rom(boolean headOnly) {
+    if (headOnly == true) {
+        eesam_head head ;
+        head.type = 0;
+        head.rlen = 0;
+        head.capa = 0;
+        _vol->write(0,(void*)&head,sizeof(head));
+        delay(1);
+    }
+    else {
+        byte buf[8] = {0};
+        unsigned long capacity,pos =0;
+        capacity = _vol->capacity();
+        while (_vol->write(pos,buf,sizeof(buf))==0) {
+            pos += sizeof(buf);
+            if (pos>capacity) break;
+        }
     }
 }
 bool eeprom_catalog::read_header(unsigned long pos, eesam_head* head) {
@@ -90,7 +100,7 @@ eeprom_sam eeprom_catalog::sam(int entry) {
             break;
         
         if (count == entry) 
-            return eeprom_sam(_vol,pos);
+            return eeprom_sam(_vol,pos,entry);
         count++;
         pos += head.rlen * head.capa + sizeof(head);
         if (pos>=volcap) break;
@@ -107,7 +117,7 @@ eeprom_sam::eeprom_sam() {
     Serial.println("eeprom_sam. make null.");
 #endif
 }
-eeprom_sam::eeprom_sam(extEEPROM* vol, unsigned long pos){
+eeprom_sam::eeprom_sam(extEEPROM* vol, unsigned long pos, int entry){
     _vol=NULL;
     if (byte rc = vol->read(pos,(void*)&_head,sizeof(_head))) {
 #ifdef DEBUG
@@ -119,6 +129,7 @@ eeprom_sam::eeprom_sam(extEEPROM* vol, unsigned long pos){
     _origin=pos+sizeof(_head);
     _position=0;
     _vol=vol;
+    _entry=entry;
 #ifdef DEBUG
     Serial.println("eeprom_sam.");
     Serial.print("vol:");
